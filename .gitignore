@@ -104,3 +104,4 @@ dist
 .tern-port
 tokens.json
 at.json
+.directory
