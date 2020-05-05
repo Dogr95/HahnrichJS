@@ -105,3 +105,5 @@ dist
 tokens.json
 at.json
 .directory
+package-lock.json
+package.json
