@@ -91,9 +91,7 @@ const CLIENT_SECRET = process.env.clientSecret;
                 chatClient.action(channel, `No command found named: ${command}. @${user.displayName}`)
                 return
             } else {
-                //TwitchClient.helix.users.getUserByName(user)
-                //.then(tmp => user = tmp)
-                /*.then(user => */useable.execute(chatClient,channel,user,message,args,TwitchClient)/*)*/;
+                useable.execute(chatClient,channel,user,message,args,TwitchClient)/*)*/;
         }
     }});
 
