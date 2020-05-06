@@ -68,11 +68,14 @@ const CLIENT_SECRET = process.env.clientSecret;
             const command = message.substr(1).split(" ")[0].trim();
             const args = message.split(' ').slice(1);
             const useable = chatClient.huso.get(command);
+            user = msg.userInfo
+            console.log(user)
+            user.isSubscriber = false
             if(!useable){
-                chatClient.action(channel, `No command found named: ${command}. @${user}`)
+                chatClient.action(channel, `No command found named: ${command}. @${user.displayName}`)
                 return
             } else {
-                TwitchClient.helix.users.getUserByName(user)
+                TwitchClient.helix.users.getUserByName(user.displayName)
                 .then(tmp => user = tmp)
                 .then(user => useable.execute(chatClient,channel,user,message,args,TwitchClient));
             }
