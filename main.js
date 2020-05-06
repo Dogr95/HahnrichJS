@@ -63,7 +63,7 @@ const CLIENT_SECRET = process.env.clientSecret;
     chatClient.onSubsOnly((channel, enabled) => console.log(`Sub-only mode is now ${enabled}.`))
     chatClient.onTimeout((channel, user, duration) => console.log(`${user} got timed out for ${duration} seconds.`))
     chatClient.onWhisper((user, message, msg) => {
-        let channel = null
+        let channel = channels[0]
         if (message.charAt(0) === process.env.prefix) {
             const command = message.substr(1).split(" ")[0].trim();
             const args = message.split(' ').slice(1);
@@ -81,18 +81,19 @@ const CLIENT_SECRET = process.env.clientSecret;
     });
 
 
-    chatClient.onPrivmsg((channel, user, message) => {
+    chatClient.onPrivmsg((channel, user, message, msg) => {
         if (message.charAt(0) === process.env.prefix) {
+            user = msg.userInfo
             const command = message.substr(1).split(" ")[0].trim();
             const args = message.split(' ').slice(1);
             const useable = chatClient.huso.get(command);
             if(!useable){
-                chatClient.action(channel, `No command found named: ${command}. @${user}`)
+                chatClient.action(channel, `No command found named: ${command}. @${user.displayName}`)
                 return
             } else {
-                TwitchClient.helix.users.getUserByName(user)
-                .then(tmp => user = tmp)
-                .then(user => useable.execute(chatClient,channel,user,message,args,TwitchClient));
+                //TwitchClient.helix.users.getUserByName(user)
+                //.then(tmp => user = tmp)
+                /*.then(user => */useable.execute(chatClient,channel,user,message,args,TwitchClient)/*)*/;
         }
     }});
 
