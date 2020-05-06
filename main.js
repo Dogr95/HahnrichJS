@@ -20,7 +20,15 @@ const CLIENT_SECRET = process.env.clientSecret;
             await F.writeFileSync('./tokens.json', JSON.stringify(newTokenData, null, 4), function(err){if (err != null){console.log(err)}});
         }
     });
-    var chatClient = await ChatModule.forTwitchClient(TwitchClient, { channels: ['vertikarl', 'zfchris_'] });
+    let channels = []
+    let channels_file = F.readFileSync('./channels.txt', function(err){if (err != null){console.log(err)}});
+    channels_file = channels_file.toString().split('\n')
+    for(const channel in channels_file) {
+        if( channels_file[channel].length == 0 ) { /* ignore empty lines */ }
+        else {
+            channels.push(channels_file[channel])
+    }};
+    let chatClient = await ChatModule.forTwitchClient(TwitchClient, { channels: channels });
     chatClient.huso = new Map()
     const commandFiles = F.readdirSync('./commands').filter(file => file.endsWith('.js'));
     for(const file of commandFiles) {
@@ -55,15 +63,19 @@ const CLIENT_SECRET = process.env.clientSecret;
     chatClient.onSubsOnly((channel, enabled) => console.log(`Sub-only mode is now ${enabled}.`))
     chatClient.onTimeout((channel, user, duration) => console.log(`${user} got timed out for ${duration} seconds.`))
     chatClient.onWhisper((user, message, msg) => {
+        let channel = null
         if (message.charAt(0) === process.env.prefix) {
             const command = message.substr(1).split(" ")[0].trim();
             const args = message.split(' ').slice(1);
             const useable = chatClient.huso.get(command);
             if(!useable){
-                chatClient.say(`No command found named: ${command}`)
+                chatClient.action(channel, `No command found named: ${command}. @${user}`)
                 return
+            } else {
+                TwitchClient.helix.users.getUserByName(user)
+                .then(tmp => user = tmp)
+                .then(user => useable.execute(chatClient,channel,user,message,args,TwitchClient));
             }
-            useable.execute(chatClient,channel,user,message,args,TwitchClient)
         }
 
     });
@@ -75,12 +87,14 @@ const CLIENT_SECRET = process.env.clientSecret;
             const args = message.split(' ').slice(1);
             const useable = chatClient.huso.get(command);
             if(!useable){
-                chatClient.say(`No command found named: ${command}`)
+                chatClient.action(channel, `No command found named: ${command}. @${user}`)
                 return
-            }
-            useable.execute(chatClient,channel,user,message,args,TwitchClient)
+            } else {
+                TwitchClient.helix.users.getUserByName(user)
+                .then(tmp => user = tmp)
+                .then(user => useable.execute(chatClient,channel,user,message,args,TwitchClient));
         }
-    });
+    }});
 
 
 })();

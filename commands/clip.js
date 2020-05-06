@@ -2,6 +2,7 @@ module.exports = {
     name: 'clip',
     description: 'creates a clip of given channel',
     execute(chatClient,channel,user,message,args,TwitchClient) {
+        user = user.name
         channel = channel.substr(1)
         if ( typeof args[0] == 'undefined') {args[0] = channel}
             TwitchClient.helix.users.getUserByName(args[0])

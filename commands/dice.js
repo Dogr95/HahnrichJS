@@ -2,6 +2,7 @@ module.exports = {
     name: 'dice',
     description: 'rolls a dice with a given amount of sides',
     execute(chatClient,channel,user,message,args) {
+        user = user.name
         // check if number of decimals are given, if not set default value of 3
         if ( typeof args[1] !== 'undefined' ) { Number.parseInt(args[1]) }
         else { args[1] = 3 } // default value
