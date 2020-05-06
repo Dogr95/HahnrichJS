@@ -4,7 +4,7 @@ module.exports = {
     execute(chatClient,channel,user,message,args) {
         user = user.displayName
         // check if number of decimals are given, if not set default value of 3
-        if ( typeof args[1] !== 'undefined' ) { Number.parseInt(args[1]) }
+        if ( Number.parseInt(args[1]) && args[1] > 0 ) { Number.parseInt(args[1]) }
         else { args[1] = 3 } // default value
         if ( Number.parseFloat(args[0]) ) { // check if given args are int/float
             const diceRoll = Math.random() * args[0] + 1;
