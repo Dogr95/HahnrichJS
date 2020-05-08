@@ -17,7 +17,8 @@ const commandFiles = F.readdirSync('./DISCORD/commands').filter(file => file.end
     }
 
 client.on('message', message => {
-    if (message.content.charAt(0) === process.env.DISCORD_PREFIX) {
+    if ( message.channel.type == 'dm' && message.author !== client.user) { message.reply(`Sorry i don't take dm's`)} //ignore dm's
+    else if (message.content.charAt(0) === process.env.DISCORD_PREFIX) {
             const command = message.content.substr(1).split(" ")[0].trim();
             const args = message.content.split(' ').slice(1);
             const useable = client.huso.get(command);
