@@ -1,4 +1,4 @@
-const discord = require('./discord');
+const discord = require('discord.js');
 const F = require('fs');
 const client = new discord.Client();
 client.huso = new Map()
