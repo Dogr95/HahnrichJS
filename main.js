@@ -30,11 +30,19 @@ const CLIENT_SECRET = process.env.clientSecret;
     }};
     let chatClient = await ChatModule.forTwitchClient(TwitchClient, { channels: channels });
     chatClient.huso = new Map()
-    const commandFiles = F.readdirSync('./commands').filter(file => file.endsWith('.js'));
+    const commandFiles = F.readdirSync('./TWITCH/commands').filter(file => file.endsWith('.js'));
     for(const file of commandFiles) {
-        const command_from_file = require(`./commands/${file}`)
+        const command_from_file = require(`./TWITCH/commands/${file}`)
         chatClient.huso.set(command_from_file.name, command_from_file)
     }
+    // chatClient.react = new Map()
+    // const reactFile = F.readdirSync('./json/react.json', function(err){if (err != null){console.log(err)}});
+    // for(const file of reactFile) {
+    // }
+    // chatClient.response = new Map()
+    // const responseFile = F.readdirSync('./json/response.json', function(err){if (err != null){console.log(err)}});
+    // for(const file of responseFile) {
+    // }
     await chatClient.connect();
     chatClient.onAuthenticationFailure((message) => console.log(message))
     chatClient.onBan((channel, user) => console.log(`${user} got perm banned on ${channel}`))
@@ -96,7 +104,10 @@ const CLIENT_SECRET = process.env.clientSecret;
             } else {
                 useable.execute(chatClient,channel,user,message,args,TwitchClient)/*)*/;
         }
-    }});
+    }} /*else if( message in chatClient.react ) {
+            //
+        }
+    }*/);
 
 
 })();
