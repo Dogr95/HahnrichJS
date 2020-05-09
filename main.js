@@ -101,7 +101,10 @@ const CLIENT_SECRET = process.env.clientSecret;
             if(!useable){
                 chatClient.action(channel, `No command found named: ${command}. @${user.displayName}`)
                 return
-            } else {
+            } else if( useable.name == 'help' ) {
+                useable.execute(chatClient,channel,user,message,args,chatClient.huso)
+            }
+            else {
                 useable.execute(chatClient,channel,user,message,args,TwitchClient)/*)*/;
         }
     }} /*else if( message in chatClient.react ) {
