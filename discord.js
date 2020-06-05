@@ -6,6 +6,7 @@ require('opusscript')
 require('dotenv').config();
 const dhl = require('postman-request');
 const token = process.env.DISCORD_TOKEN;
+
 async function check_repeat() {
     let repeatF = await F.readFileSync('tmp/repeat', function(err){if (err != null){console.log(err)}})
     return eval(repeatF.toString())
@@ -17,6 +18,7 @@ async function rep(state, file) {
         if(await check_repeat()) {
             rep(state, file)
         } else {
+            F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
             state.disconnect()
         }
     })
@@ -70,8 +72,10 @@ client.on('message', message => {
                                         channel.join()
                                             .then(state => {
                                                 let dispatcher = state.play(`tmp/${message.attachments.first().name}`)
+                                                F.writeFile('tmp/np', `${message.attachments.first().name.split('.')[0]}`, (err) => {if(err !== null) {console.log(err)}})
                                                 dispatcher.on('finish', async () => {
                                                     if(!await check_repeat()) {
+                                                        F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
                                                         state.disconnect()
                                                     } else {
                                                         rep(state, `tmp/${message.attachments.first().name}`)
