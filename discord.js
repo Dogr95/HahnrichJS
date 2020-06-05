@@ -63,13 +63,10 @@ client.on('message', message => {
                     if (channel.constructor.name === 'VoiceChannel') {
                         if (channel.members.has(message.author.id)) {
                             found = true;
-                            message.reply(`trying to download "${message.attachments.first().name}"`)
-                            dhl.get(message.attachments.first().url)
-                                .on('error', message.reply)
-                                .pipe(F.createWriteStream(`tmp/${message.attachments.first().name}`)
-                                    .on('finish', () => {
-                                        message.reply('done downloading, joining...')
-                                        channel.join()
+                            (async () => {
+                                let tmp = await F.readdirSync('./tmp', (err) => {if(err !== null) {console.log(err)}})
+                                if (tmp.includes(message.attachments.first().name)) {
+                                    channel.join()
                                             .then(state => {
                                                 let dispatcher = state.play(`tmp/${message.attachments.first().name}`)
                                                 F.writeFile('tmp/np', `${message.attachments.first().name.split('.')[0]}`, (err) => {if(err !== null) {console.log(err)}})
@@ -84,8 +81,33 @@ client.on('message', message => {
                                                 })
                                             })
                                             .catch(message.reply)
-                                    })
-                                )}
+                                } else {
+                                    message.reply(`trying to download "${message.attachments.first().name}"`)
+                                    dhl.get(message.attachments.first().url)
+                                        .on('error', message.reply)
+                                        .pipe(F.createWriteStream(`tmp/${message.attachments.first().name}`)
+                                            .on('finish', () => {
+                                                message.reply('done downloading, joining...')
+                                                channel.join()
+                                                    .then(state => {
+                                                        let dispatcher = state.play(`tmp/${message.attachments.first().name}`)
+                                                        F.writeFile('tmp/np', `${message.attachments.first().name.split('.')[0]}`, (err) => {if(err !== null) {console.log(err)}})
+                                                        dispatcher.on('finish', async () => {
+                                                            if(!await check_repeat()) {
+                                                                F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
+                                                                state.disconnect()
+                                                            } else {
+                                                                rep(state, `tmp/${message.attachments.first().name}`)
+                                                                    .catch(message.reply)
+                                                            }
+                                                        })
+                                                    })
+                                                    .catch(message.reply)
+                                            })
+                                        )
+                                }
+                            })();
+                                }
                     }
                     })
                 })
@@ -106,7 +128,7 @@ client.on('message', message => {
                 message.reply(`no command found named: ${command}.`)
                 return
             } else {
-                useable.execute(discord,message,args);}
+                useable.execute(discord,message,args,client);}
     }
 });
 
