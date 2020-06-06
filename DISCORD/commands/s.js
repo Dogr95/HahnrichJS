@@ -20,9 +20,9 @@ module.exports = {
                     TC.helix.clips.getClipById(clip_id)
                         .then(res => {
                             let link = res.thumbnailUrl.split('-preview')[0] + '.mp4'
-                            dhl.get(link).pipe(F.createWriteStream(`archive/${clip_id}.mp4`)).on('finish', () => {
-                                let attachment = new Discord.MessageAttachment(`archive/${clip_id}.mp4`)
-                                F.writeFile(`archive/${clip_id}.json`, JSON.stringify(res, null, 4), () => {})
+                            dhl.get(link).pipe(F.createWriteStream(`../alleshusos.de/private/clips/${clip_id}.mp4`)).on('finish', () => {
+                                let attachment = new Discord.MessageAttachment(`../alleshusos.de/private/clips/${clip_id}.mp4`)
+                                F.writeFile(`../alleshusos.de/private/clips/${clip_id}.json`, JSON.stringify(res, null, 4), () => {})
                                 message.reply(`finised downloading ${clip_id} from channel ${res.broadcasterDisplayName}`, attachment)
                             })
                             })
