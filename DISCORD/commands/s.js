@@ -1,0 +1,38 @@
+const F = require('fs');
+const dhl = require('postman-request');
+const TwitchLogin = require('../../TWITCH/main')
+const Discord = require('discord.js')
+module.exports = {
+    name: 's',
+    description: 'secret',
+    execute(discord,message,args,client) {
+        let found = false;
+        message.member.roles.cache.forEach((key, value) => {
+            if(key.name === 'innocent') {
+                found = true;
+                let clip_id = args[0]
+                if(args[0] !== undefined) {
+                    if(clip_id.includes('https://clips.twitch.tv/')) {
+                        clip_id = clip_id.replace('https://clips.twitch.tv/', '')
+                    }
+                    TwitchLogin.refresh()
+                    .then(TC => {
+                    TC.helix.clips.getClipById(clip_id)
+                        .then(res => {
+                            let link = res.thumbnailUrl.split('-preview')[0] + '.mp4'
+                            dhl.get(link).pipe(F.createWriteStream(`archive/${clip_id}.mp4`)).on('finish', () => {
+                                let attachment = new Discord.MessageAttachment(`archive/${clip_id}.mp4`)
+                                message.reply(`finised downloading ${clip_id}`, attachment)
+                            })
+                            })
+                    })
+                } else {
+                    message.reply('missing argument')
+                }
+            }
+        })
+        if(!found) {
+            message.reply("you don't have permission to use this command.")
+        }
+    }
+}
