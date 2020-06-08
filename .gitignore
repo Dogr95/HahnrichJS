@@ -108,3 +108,4 @@ at.json
 package-lock.json
 package.json
 channels.txt
+tmp/

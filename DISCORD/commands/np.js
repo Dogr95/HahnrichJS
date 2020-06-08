@@ -5,7 +5,6 @@ module.exports = {
     description: 'shows currently playing file',
     async execute(discord,message,args) {
         let np = await F.readFileSync('tmp/np', function(err){if (err != null){console.log(err)}})
-        console.log(np.toString())
         if (np.toString() !== 'none') {
             message.reply(`Currently Playing: ${np.toString()}`)
         } else {

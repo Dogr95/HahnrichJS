@@ -2,6 +2,22 @@ const F = require('fs')
 module.exports = {
     name: 'random',
     description: 'plays a random file',
+    async check_random_repeat() {
+        let randomRepeat = await F.readFileSync('tmp/random_repeat', function(err){if (err != null){console.log(err)}})
+        return eval(randomRepeat.toString())
+    },
+    random_repeat(client, state, tmp) {
+        let random_file = tmp[Math.floor(Math.random() * tmp.length)];
+        let dispatcher = state.play(`tmp/${random_file}`)
+        dispatcher.on('finish', async () => {
+            if(await client.huso.get('random').check_random_repeat()) {
+                client.huso.get('random').random_repeat(client, state, tmp)
+            } else {
+                F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
+                state.disconnect()
+            }
+        })
+    },
     execute(discord,message,args,client) {
         let found = false;
         client.guilds.cache.forEach(guild => {
@@ -28,12 +44,16 @@ module.exports = {
                                         }
                                     })
                                     dispatcher.on('finish', async () => {
-                                        F.writeFile('tmp/np', `none`, (err) => {
-                                            if (err !== null) {
-                                                console.log(err)
-                                            }
-                                        })
-                                        state.disconnect()
+                                        if(await client.huso.get('random').check_random_repeat()) {
+                                            client.huso.get('random').random_repeat(client, state, tmp)
+                                        } else {
+                                                F.writeFile('tmp/np', `none`, (err) => {
+                                                if (err !== null) {
+                                                    console.log(err)
+                                                }
+                                            })
+                                            state.disconnect()
+                                        }
                                     })
                                 })
                                 .catch(message.reply)
