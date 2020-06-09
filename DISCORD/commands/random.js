@@ -8,7 +8,8 @@ module.exports = {
     },
     random_repeat(client, state, tmp) {
         let random_file = tmp[Math.floor(Math.random() * tmp.length)];
-        let dispatcher = state.play(`tmp/${random_file}`)
+        let dispatcher = state.play(`tmp/${random_file}`);
+        F.writeFile('tmp/np', `${random_file}`, (err) => {if(err !== null) {console.log(err)}})
         dispatcher.on('finish', async () => {
             if(await client.huso.get('random').check_random_repeat()) {
                 client.huso.get('random').random_repeat(client, state, tmp)
