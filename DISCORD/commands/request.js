@@ -14,7 +14,7 @@ module.exports = {
           }
           n++
         }
-        let data = message.author + ';' + message.author.username + ';' + `"${request}` + ';' + new Date() + '\n'
+        let data = message.author + ',' + message.author.username + ',' + `"${request}"` + ',' + new Date() + '\n'
         F.appendFile('../alleshusos.de/private/todo-list.csv', data.toString(), function (err) {
           if(!err) {
             message.reply('added your request to the todo-list!')
