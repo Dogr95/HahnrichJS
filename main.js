@@ -45,12 +45,12 @@ function update_db(db) {
 async function update_watchtime(TC, channel, active_users) {
   console.log(`${new Date()}: updating watchtime for ${active_users.get(channel.replace('#', '')).length} users`)
   db = await load_db()
-  db_keys = Object.keys(db)
+  db_keys = Object.keys(await db)
   for(user in active_users.get(channel.replace('#', ''))) {
     obj = await TC.helix.users.getUserByName(active_users.get(channel.replace('#', ''))[user])
     if (db_keys.includes(obj.id.toString())) {
       db[obj.id.toString()].watchtime = db[obj.id.toString()].watchtime + (new Date() - active_users_memory.get(obj.name))
-      active_users_memory.set(obj.displayName, new Date())
+      active_users_memory.set(obj.name, new Date())
       update_db(db)
     } else if (await inBlacklist(obj.name) === false && 0 < (cooldown-new Date())) {
       console.log(`${obj.name} is not in db. adding...`)
