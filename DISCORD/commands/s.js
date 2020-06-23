@@ -24,7 +24,11 @@ module.exports = {
                                 let attachment = new Discord.MessageAttachment(`../alleshusos.de/private/clips/${clip_id}.mp4`)
                                 F.writeFile(`../alleshusos.de/private/clips/${clip_id}.json`, JSON.stringify(res, null, 4), () => {})
                                 message.reply(`finised downloading ${clip_id} from channel ${res.broadcasterDisplayName}`, attachment)
-                                    .catch(message.reply(`failed uploading to discord. here is a link to alleshusos.de: https://alleshusos.de/private/clips/${clip_id}.mp4`))
+                                    .catch((err) => {
+                                    message.reply(`failed uploading to discord.(${err}) here is a link to alleshusos.de: https://alleshusos.de/private/clips/${clip_id}.mp4`).catch((err) => {
+                                      console.log(`error, couldn't send message (${err})`)
+                                      })
+                                    })
                             })
                             })
                     })
