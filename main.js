@@ -7,7 +7,8 @@ const CLIENT_SECRET = process.env.clientSecret;
 let db = new Object();
 let active_users = new Map();
 let active_users_memory = new Map();
-let cooldown = 0;
+let cooldown = 30000;
+let last_update = new Date()-30000;
 
 try {
   F.readFile('./db.json', (err, data) => {db = JSON.parse(data)})
@@ -23,14 +24,9 @@ try {
   // db = JSON.parse(F.readFileSync('./db.json', function(err){if (err !== null) {console.log(err)}}))
 }
 
-function inBlacklist(name) {
-  F.readFile('./blacklist', (err, data) => {
-    if (data.toString().split(', ').includes(name)) {
-      return true
-    } else {
-      return false
-    }
-  })
+async function inBlacklist(name) {
+  data = await F.readFileSync('./blacklist', () => {})
+  return data.toString().split(', ').includes(name)
 }
 
 async function load_db() {
@@ -38,29 +34,44 @@ async function load_db() {
 }
 
 function update_db(db) {
-  cooldown = 30000
+  last_update = new Date().getTime()
   F.writeFile('./db.json', JSON.stringify(db, null, 4), () => {})
 }
 
-async function update_watchtime(TC, channel, active_users) {
-  console.log(`${new Date()}: updating watchtime for ${active_users.get(channel.replace('#', '')).length} users`)
-  db = await load_db()
-  db_keys = Object.keys(await db)
-  for(user in active_users.get(channel.replace('#', ''))) {
-    obj = await TC.helix.users.getUserByName(active_users.get(channel.replace('#', ''))[user])
-    if (db_keys.includes(obj.id.toString())) {
-      db[obj.id.toString()].watchtime = db[obj.id.toString()].watchtime + (new Date() - active_users_memory.get(obj.name))
-      active_users_memory.set(obj.name, new Date())
-      update_db(db)
-    } else if (await inBlacklist(obj.name) === false && 0 < (cooldown-new Date())) {
-      console.log(`${obj.name} is not in db. adding...`)
-      db[obj.id] = {
-          "name": `${obj.name}`,
-          "balance": 0,
-          "watchtime": 0
-        }
-      update_db(db)
+async function update_watchtime(TC, channel, active_users, passed_user) {
+  console.log('Stream is Live? ->', await TC.helix.streams.getStreamByUserName(channel.replace('#', '')) !== null)
+  if(await TC.helix.streams.getStreamByUserName(channel.replace('#', '')) !== null && 0 <= (new Date().getTime()-(last_update+cooldown))) {
+    console.log(`${new Date()}: updating watchtime for ${active_users.get(channel.replace('#', '')).length} users`)
+    db = await load_db()
+    db_keys = Object.keys(await db)
+    for(user in active_users.get(channel.replace('#', ''))) {
+      obj = await TC.helix.users.getUserByName(active_users.get(channel.replace('#', ''))[user] || passed_user)
+      console.log('-----------------------------------',
+        '\n| ', obj.name,
+       '\n| -', 'Is in Blacklist? ->', await inBlacklist(await obj.name),
+       '\n| - outside cooldown? -> ', 0 <= (new Date().getTime()-(last_update+cooldown)),
+        `\n| - ${new Date().getTime()-(last_update+cooldown)} is higher than 0? ->`,0 <= (new Date().getTime()-(last_update+cooldown)),
+        '\n| -', `Should ${obj.name} be added to db? ->`, !await inBlacklist(obj.name) && 0 <= (new Date()-(last_update+cooldown)),
+      )
+      if (db_keys.includes(obj.id.toString())) {
+        db[obj.id.toString()].watchtime = db[obj.id.toString()].watchtime + (new Date().getTime() - active_users_memory.get(obj.name))
+        active_users_memory.set(obj.name, new Date().getTime())
+        update_db(db)
+      } else if (!await inBlacklist(obj.name)) {
+        console.log(`${obj.name} is not in db. adding...`)
+        db[obj.id] = {
+            "name": `${obj.name}`,
+            "balance": 0,
+            "watchtime": 0
+          }
+        update_db(db)
+      }
     }
+  } else if (await TC.helix.streams.getStreamByUserName(channel.replace('#', '')) === null) {
+    active_users_memory.forEach((key, value) => {
+      active_users_memory.set(value, new Date().getTime())
+    });
+
   }
 }
 
@@ -126,14 +137,14 @@ async function check_watchtime(TC, channel, active_users, user) {
     chatClient.onJoin((channel, user) => {
       tmp = active_users.get(channel.replace('#', ''))
       tmp.push(user)
-      active_users_memory.set(user, new Date())
+      active_users_memory.set(user, new Date().getTime())
       active_users.set(channel.replace('#', ''), tmp)
-      update_watchtime(TwitchClient, channel, active_users)
+      update_watchtime(TwitchClient, channel, active_users, user)
     })
     chatClient.onPart((channel, user) => {
       tmp = active_users.get(channel.replace('#', ''))
       index = tmp.indexOf(user)
-      update_watchtime(TwitchClient, channel, active_users)
+      update_watchtime(TwitchClient, channel, active_users, user)
       active_users_memory.delete(user)
       tmp.splice(index, 1)
       active_users.set(channel.replace('#', ''), tmp)
