@@ -3,7 +3,7 @@ module.exports = {
     description: 'creates a clip of given channel',
     execute(chatClient, channel, user, message, args, TwitchClient) {
         if (typeof args[0] == 'undefined') {
-            args[0] = channel // if user didn't specify channel, create a clip of the current channel
+            args[0] = channel.replace('#', '') // if user didn't specify channel, create a clip of the current channel
         }
 
         if (user.isSubscriber) {
