@@ -76,15 +76,21 @@ client.on('message', message => {
                                                         state.disconnect()
                                                     } else {
                                                         rep(state, `tmp/${message.attachments.first().name}`)
-                                                            .catch(message.reply)
+                                                            .catch((err) => {
+                                                              message.reply(err)
+                                                            })
                                                     }
                                                 })
                                             })
-                                            .catch(message.reply)
+                                            .catch((err) => {
+                                              message.reply(err)
+                                            })
                                 } else {
                                     message.reply(`trying to download "${message.attachments.first().name}"`)
                                     dhl.get(message.attachments.first().url)
-                                        .on('error', message.reply)
+                                        .on('error', (err) => {
+                                          message.reply(err)
+                                        })
                                         .pipe(F.createWriteStream(`tmp/${message.attachments.first().name}`)
                                             .on('finish', () => {
                                                 message.reply('done downloading, joining...')
@@ -98,11 +104,15 @@ client.on('message', message => {
                                                                 state.disconnect()
                                                             } else {
                                                                 rep(state, `tmp/${message.attachments.first().name}`)
-                                                                    .catch(message.reply)
+                                                                  .catch((err) => {
+                                                                    message.reply(err)
+                                                                  })
                                                             }
                                                         })
                                                     })
-                                                    .catch(message.reply)
+                                                    .catch((err) => {
+                                                      message.reply(err)
+                                                    })
                                             })
                                         )
                                 }
