@@ -39,7 +39,7 @@ module.exports = {
                             channel.join()
                                 .then(state => {
                                     let dispatcher = state.play(`tmp/${choice}`)
-                                    F.writeFile('tmp/np', `${choice.split('.')[0]}`, (err) => {
+                                    F.writeFile('tmp/np', `${choice}`, (err) => {
                                         if (err !== null) {
                                             console.log(err)
                                         }
