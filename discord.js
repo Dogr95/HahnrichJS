@@ -131,18 +131,18 @@ client.on('message', message => {
                                                         request_user['time_of_request'] = new Date()
                                                         F.writeFile(`tmp/${message.attachments.first().name.split('.')[0]}.json`, JSON.stringify(message.author, null, 4), (err) => {if(err !== null) {console.log(err)}})
                                                         dispatcher.on('finish', async () => {
-                                                            if(!await check_repeat()) {
-                                                                F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
-                                                                state.disconnect()
+                                                            if(await check_repeat()) {
+                                                                rep(state, `tmp/${message.attachments.first().name}`)
+                                                                  .catch((err) => {
+                                                                    message.reply(err)
+                                                                  })
                                                             } else if(await check_random_repeat()) {
                                                                 setTimeout(() => {
                                                                   random_repeat(client, state, tmp)
                                                                 }, 500)
                                                             } else {
-                                                                rep(state, `tmp/${message.attachments.first().name}`)
-                                                                  .catch((err) => {
-                                                                    message.reply(err)
-                                                                  })
+                                                              F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
+                                                              state.disconnect()
                                                             }
                                                         })
                                                     })
