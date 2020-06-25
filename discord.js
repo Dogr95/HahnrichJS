@@ -24,6 +24,31 @@ async function rep(state, file) {
     })
 }
 
+async function check_random_repeat() {
+    let randomRepeat = await F.readFileSync('tmp/random_repeat', function(err){if (err != null){console.log(err)}})
+    return eval(randomRepeat.toString())
+}
+
+function random_repeat(client, state, tmp) {
+    let random_file = tmp[Math.floor(Math.random() * tmp.length)];
+    let dispatcher = state.play(`tmp/${random_file}`);
+    F.writeFile('tmp/np', `${random_file}`, (err) => {if(err !== null) {console.log(err)}})
+    dispatcher.on('finish', async () => {
+        if(client.huso.get('random').check_repeat()) {
+            setTimeout(() => {
+              client.huso.get('random').rep(client, state, random_file, tmp)
+            }, 500)
+        } else if(await client.huso.get('random').check_random_repeat()) {
+            setTimeout(() => {
+              client.huso.get('random').random_repeat(client, state, tmp)
+            }, 500)
+        } else {
+            F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
+            state.disconnect()
+        }
+    })
+}
+
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
     client.user.setPresence({
@@ -56,7 +81,7 @@ const commandFiles = F.readdirSync('./DISCORD/commands').filter(file => file.end
 client.on('message', message => {
     if ( message.channel.type == 'dm' && message.author !== client.user) {
         if (message.attachments.first()) {
-            if (message.attachments.first().name.split('.')[1] === 'mp3' || message.attachments.first().name.split('.')[1] === 'wav') {
+            if (message.attachments.first().name.split('.')[message.attachments.first().name.split('.').length-1] === 'mp3' || message.attachments.first().name.split('.')[message.attachments.first().name.split('.').length-1] === 'wav') {
                 let found = false;
                 client.guilds.cache.forEach(guild => {
                 guild.channels.cache.forEach(channel => {
@@ -69,11 +94,15 @@ client.on('message', message => {
                                     channel.join()
                                             .then(state => {
                                                 let dispatcher = state.play(`tmp/${message.attachments.first().name}`)
-                                                F.writeFile('tmp/np', `${message.attachments.first().name.split('.')[0]}`, (err) => {if(err !== null) {console.log(err)}})
+                                                F.writeFile('tmp/np', `${message.attachments.first().name}`, (err) => {if(err !== null) {console.log(err)}})
                                                 dispatcher.on('finish', async () => {
                                                     if(!await check_repeat()) {
                                                         F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
                                                         state.disconnect()
+                                                    } else if(await check_random_repeat()) {
+                                                        setTimeout(() => {
+                                                          random_repeat(client, state, tmp)
+                                                        }, 500)
                                                     } else {
                                                         rep(state, `tmp/${message.attachments.first().name}`)
                                                             .catch((err) => {
@@ -97,11 +126,18 @@ client.on('message', message => {
                                                 channel.join()
                                                     .then(state => {
                                                         let dispatcher = state.play(`tmp/${message.attachments.first().name}`)
-                                                        F.writeFile('tmp/np', `${message.attachments.first().name.split('.')[0]}`, (err) => {if(err !== null) {console.log(err)}})
+                                                        F.writeFile('tmp/np', `${message.attachments.first().name}`, (err) => {if(err !== null) {console.log(err)}})
+                                                        request_user = message.author
+                                                        request_user['time_of_request'] = new Date()
+                                                        F.writeFile(`tmp/${message.attachments.first().name.split('.')[0]}.json`, JSON.stringify(message.author, null, 4), (err) => {if(err !== null) {console.log(err)}})
                                                         dispatcher.on('finish', async () => {
                                                             if(!await check_repeat()) {
                                                                 F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
                                                                 state.disconnect()
+                                                            } else if(await check_random_repeat()) {
+                                                                setTimeout(() => {
+                                                                  random_repeat(client, state, tmp)
+                                                                }, 500)
                                                             } else {
                                                                 rep(state, `tmp/${message.attachments.first().name}`)
                                                                   .catch((err) => {
