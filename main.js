@@ -101,7 +101,7 @@ async function update_watchtime(TC, channel, active_users, passed_user) {
   }
 }
 
-async function xp_and_level() {
+async function xp_and_level(ChatClient, channels) {
   db = await load_db()
   for(entry in await db) {
     db[entry].totalXp = Math.floor(db[entry].watchtime/5000)
@@ -111,12 +111,13 @@ async function xp_and_level() {
     if(!db[entry].level) {
       db[entry].level = 1
     }
-    db[entry] = levelUp(db[entry])
+    db[entry] = levelUp(db[entry], ChatClient, channels)
   }
   update_db(db)
+  return db
 }
 
-function levelUp(userdata){
+function levelUp(userdata, ChatClient, channels){
 
   let result = undefined
   let tempLvl = userdata.level
@@ -129,6 +130,9 @@ function levelUp(userdata){
       userdata.level++;
       userdata.xp -= result;
       if(userdata.xp >= result)userdata = levelUp(userdata);
+      for(channel in channels) {
+        ChatClient.say(('#' + channels[channel]), `@${userdata.name} just leveled up to level ${userdata.level} PogChamp`)
+      }
   }
 
   return(userdata)
@@ -156,7 +160,6 @@ async function check_watchtime(TC, channel, active_users, user) {
             await F.writeFileSync('./tokens.json', JSON.stringify(newTokenData, null, 4), function(err){if (err != null){console.log(err)}});
         }
     });
-    xp_and_level()
     let channels = []
     let channels_file = F.readFileSync('./channels.txt', function(err){if (err != null){console.log(err)}});
     channels_file = channels_file.toString().split('\n')
@@ -181,6 +184,7 @@ async function check_watchtime(TC, channel, active_users, user) {
     // for(const file of responseFile) {
     // }
     await chatClient.connect();
+    xp_and_level(chatClient, channels)
     chatClient.onAuthenticationFailure((message) => console.log(message))
     chatClient.onBan((channel, user) => console.log(`${user} got perm banned on ${channel}`))
     chatClient.onBitsBadgeUpgrade((channel, user, upgradeinfo, msg) => console.log(`${user} upgraded to ${upgradeinfo}`))
@@ -258,7 +262,7 @@ async function check_watchtime(TC, channel, active_users, user) {
                 useable.execute(chatClient,channel,user,message,args,chatClient.huso)
             }
             else {
-                useable.execute(chatClient,channel,user,message,args,TwitchClient,check_watchtime,active_users)/*)*/;
+                useable.execute(chatClient,channel,user,message,args,TwitchClient,check_watchtime,active_users,load_db,xp_and_level)/*)*/;
         }
     }} /*else if( message in chatClient.react ) {
             //
