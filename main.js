@@ -9,6 +9,22 @@ let active_users = new Map();
 let active_users_memory = new Map();
 let cooldown = 30000;
 let last_update = new Date()-30000;
+let lvlMap = new Map()
+  lvlMap.set(1,250)
+  lvlMap.set(10,650)
+  lvlMap.set(20,1250)
+  lvlMap.set(30,2500)
+  lvlMap.set(40,3500)
+  lvlMap.set(50,5000)
+  lvlMap.set(60,8000)
+  lvlMap.set(70,10000)
+  lvlMap.set(80,15000)
+  lvlMap.set(90,20000)
+  lvlMap.set(100,25000)
+  lvlMap.set(150,50000)
+  lvlMap.set(200,100000)
+  lvlMap.set(500,200000)
+  lvlMap.set(1000,1000000)
 
 try {
   F.readFile('./db.json', (err, data) => {db = JSON.parse(data)})
@@ -124,12 +140,6 @@ async function xp_and_level() {
 
 function levelUp(userdata){
 
-let lvlMap = new Map()
-
-  lvlMap.set(1,250)
-  lvlMap.set(10,650)
-  lvlMap.set(20,1250)
-  lvlMap.set(30,2500)
 
   let result = undefined
   let tempLvl = userdata.level
