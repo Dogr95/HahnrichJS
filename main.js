@@ -112,34 +112,11 @@ async function xp_and_level() {
       db[entry].level = 1
     }
     db[entry] = levelUp(db[entry])
-
-    // level = 0
-    // xp_dupe = db[entry].xp
-    // [0/*level 0*/, 7200/*level 10*/, 360000/*level 100*/]
-    // db[entry].level = Math.floor(Math.pow(db[entry].xp, 0.01))
-    // while(true) {
-    //   if(level < 10 && xp_dupe >= 270) {
-    //     level++
-    //     xp_dupe -= 270
-    //   } else if(level >= 10 && level < 20 && xp_dupe >= 540) {
-    //     level++
-    //     xp_dupe -= 540
-    //   } else if(level >= 20 && level < 30 && xp_dupe >= 1080) {
-    //     level++
-    //     xp_dupe -= 1080
-    //   } else if (level >=30 && level < 40 && xp_dupe >= 2160) {
-    //     level++
-    //     xp_dupe -= 2160
-    //   } else {
-    //     break
-    //   }
-    // }
   }
   update_db(db)
 }
 
 function levelUp(userdata){
-
 
   let result = undefined
   let tempLvl = userdata.level
