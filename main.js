@@ -39,24 +39,33 @@ function update_db(db) {
 }
 
 async function update_watchtime(TC, channel, active_users, passed_user) {
+  xp_and_level();
   console.log('Stream is Live? ->', await TC.helix.streams.getStreamByUserName(channel.replace('#', '')) !== null)
+  // checks if channel is live and if outside cooldown for function
   if(await TC.helix.streams.getStreamByUserName(channel.replace('#', '')) !== null && 0 <= (new Date().getTime()-(last_update+cooldown))) {
     console.log(`${new Date()}: updating watchtime for ${active_users.get(channel.replace('#', '')).length} users`)
     db = await load_db()
     db_keys = Object.keys(await db)
     for(user in active_users.get(channel.replace('#', ''))) {
+      // gets twitch user object from name
       obj = await TC.helix.users.getUserByName(active_users.get(channel.replace('#', ''))[user] || passed_user)
+      // \/ log of how this script sees each user \/
       console.log('-----------------------------------',
         '\n| ', obj.name,
-       '\n| -', 'Is in Blacklist? ->', await inBlacklist(await obj.name),
-       '\n| - outside cooldown? -> ', 0 <= (new Date().getTime()-(last_update+cooldown)),
+        '\n| -', 'Is in Blacklist? ->', await inBlacklist(await obj.name),
+        '\n| - outside cooldown? -> ', 0 <= (new Date().getTime()-(last_update+cooldown)),
         `\n| - ${new Date().getTime()-(last_update+cooldown)} is higher than 0? ->`,0 <= (new Date().getTime()-(last_update+cooldown)),
         '\n| -', `Should ${obj.name} be added to db? ->`, !await inBlacklist(obj.name) && 0 <= (new Date()-(last_update+cooldown)),
       )
+      // /\                                       /\
+      // checks if user is in db
       if (db_keys.includes(obj.id.toString())) {
+        // updates watchtime accordingly
         db[obj.id.toString()].watchtime = db[obj.id.toString()].watchtime + (new Date().getTime() - active_users_memory.get(obj.name))
+        // resets time of watchtime begin
         active_users_memory.set(obj.name, new Date().getTime())
         update_db(db)
+      // adds user if he is not in db
       } else if (!await inBlacklist(obj.name)) {
         console.log(`${obj.name} is not in db. adding...`)
         db[obj.id] = {
@@ -67,12 +76,75 @@ async function update_watchtime(TC, channel, active_users, passed_user) {
         update_db(db)
       }
     }
+    // resets begin of watchtime if channel if offline
   } else if (await TC.helix.streams.getStreamByUserName(channel.replace('#', '')) === null) {
     active_users_memory.forEach((key, value) => {
       active_users_memory.set(value, new Date().getTime())
     });
 
   }
+}
+
+async function xp_and_level() {
+  db = await load_db()
+  for(entry in await db) {
+    db[entry].totalXp = Math.floor(db[entry].watchtime/5000)
+    if(!db[entry].xp) {
+      db[entry].xp = db[entry].totalXp
+    }
+    if(!db[entry].level) {
+      db[entry].level = 1
+    }
+    db[entry] = levelUp(db[entry])
+
+    // level = 0
+    // xp_dupe = db[entry].xp
+    // [0/*level 0*/, 7200/*level 10*/, 360000/*level 100*/]
+    // db[entry].level = Math.floor(Math.pow(db[entry].xp, 0.01))
+    // while(true) {
+    //   if(level < 10 && xp_dupe >= 270) {
+    //     level++
+    //     xp_dupe -= 270
+    //   } else if(level >= 10 && level < 20 && xp_dupe >= 540) {
+    //     level++
+    //     xp_dupe -= 540
+    //   } else if(level >= 20 && level < 30 && xp_dupe >= 1080) {
+    //     level++
+    //     xp_dupe -= 1080
+    //   } else if (level >=30 && level < 40 && xp_dupe >= 2160) {
+    //     level++
+    //     xp_dupe -= 2160
+    //   } else {
+    //     break
+    //   }
+    // }
+  }
+  update_db(db)
+}
+
+function levelUp(userdata){
+
+let lvlMap = new Map()
+
+  lvlMap.set(1,250)
+  lvlMap.set(10,650)
+  lvlMap.set(20,1250)
+  lvlMap.set(30,2500)
+
+  let result = undefined
+  let tempLvl = userdata.level
+  while(!result){
+      result = lvlMap.get(tempLvl)
+      if(!result)tempLvl--;
+  }
+
+  if(userdata.xp >= result){
+      userdata.level++;
+      userdata.xp -= result;
+      if(userdata.xp >= result)userdata = levelUp(userdata);
+  }
+
+  return(userdata)
 }
 
 async function check_watchtime(TC, channel, active_users, user) {
@@ -97,6 +169,7 @@ async function check_watchtime(TC, channel, active_users, user) {
             await F.writeFileSync('./tokens.json', JSON.stringify(newTokenData, null, 4), function(err){if (err != null){console.log(err)}});
         }
     });
+    xp_and_level()
     let channels = []
     let channels_file = F.readFileSync('./channels.txt', function(err){if (err != null){console.log(err)}});
     channels_file = channels_file.toString().split('\n')
