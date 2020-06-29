@@ -1,6 +1,7 @@
 module.exports = {
     name: 'dice',
     description: 'rolls a dice with a given amount of sides',
+    ex: 'dice 3 5 (number of sides, number of decimals)',
     execute(chatClient,channel,user,message,args) {
         user = user.displayName
         // check if number of decimals are given, if not set default value of 3

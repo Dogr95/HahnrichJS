@@ -1,6 +1,7 @@
 module.exports = {
     name: 'ad',
     description: 'sets an adbreak for a given amount of time',
+    ex: 'ad 30 (length of ad in seconds)',
     execute(chatClient, channel, user, message, args, TwitchClient) {
         if (typeof args[0] == 'undefined') {
             args[0] = 30 // if user didn't specify the length of the adbreak, specify a default of 30 seconds
