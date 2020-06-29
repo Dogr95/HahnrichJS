@@ -58,14 +58,23 @@ module.exports = {
               } else {
                 sendLengthSeconds = length.seconds
               }
-
+              song_name_tmp = np.toString().split('.')
+              song_name_tmp.pop()
+              song_name = ""
+              for(split in song_name_tmp) {
+                if(parseInt(split)+1 === song_name_tmp.length) {
+                  song_name += song_name_tmp[split]
+                } else {
+                  song_name += song_name_tmp[split]+'.'
+                }
+              }
               let embed = new Discord.MessageEmbed()
                       .setColor('#d10202')
                       .setTitle('Now Playing:')
                       .setURL('https://zap-hosting.com/de/shop/donation/b46e5e7b07106dad59febaf3b66fd5e5/')
                       .setAuthor('HahnrichJS', 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/cb/cb9a41873f2065b8010afa7584803d283dd7e6ad_full.jpg', 'https://alleshusos.de')
                       .setFooter('If you want to support this bot, click on the header!')
-                      .setDescription(`${np.toString().split('.')[0]}`)
+                      .setDescription(`${song_name}`)
                       .setThumbnail(details[1])
                       .addField(`Originally requested by ${details[0]} on ${details[2]}`, `${current_streamTime.minutes}:${sendStreamTimeSeconds}/${length.minutes}:${sendLengthSeconds}`)
                       message.reply(embed)
@@ -108,14 +117,23 @@ module.exports = {
               } else {
                 sendLengthSeconds = length.seconds
               }
-
+              song_name_tmp = np.toString().split('.')
+              song_name_tmp.pop()
+              song_name = ""
+              for(split in song_name_tmp) {
+                if(parseInt(split)+1 === song_name_tmp.length) {
+                  song_name += song_name_tmp[split]
+                } else {
+                  song_name += song_name_tmp[split]+'.'
+                }
+              }
               let embed = new Discord.MessageEmbed()
                       .setColor('#d10202')
                       .setTitle('Now Playing:')
                       .setURL('https://zap-hosting.com/de/shop/donation/b46e5e7b07106dad59febaf3b66fd5e5/')
                       .setAuthor('HahnrichJS', 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/cb/cb9a41873f2065b8010afa7584803d283dd7e6ad_full.jpg', 'https://alleshusos.de')
                       .setFooter('If you want to support this bot, click on the header!')
-                      .setDescription(`${np.toString().split('.')[0]}`)
+                      .setDescription(`${song_name}`)
                       .addField(`No details available`, `${current_streamTime.minutes}:${sendStreamTimeSeconds}/${length.minutes}:${sendLengthSeconds}`)
                       message.reply(embed)
             })
