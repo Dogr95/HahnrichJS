@@ -96,19 +96,19 @@ client.on('message', message => {
                                                 let dispatcher = state.play(`tmp/${message.attachments.first().name}`)
                                                 F.writeFile('tmp/np', `${message.attachments.first().name}`, (err) => {if(err !== null) {console.log(err)}})
                                                 dispatcher.on('finish', async () => {
-                                                    if(!await check_repeat()) {
-                                                        F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
-                                                        state.disconnect()
-                                                    } else if(await check_random_repeat()) {
-                                                        setTimeout(() => {
-                                                          random_repeat(client, state, tmp)
-                                                        }, 500)
-                                                    } else {
-                                                        rep(state, `tmp/${message.attachments.first().name}`)
-                                                            .catch((err) => {
-                                                              message.reply(err)
-                                                            })
-                                                    }
+                                                  if(await check_repeat()) {
+                                                      rep(state, `tmp/${message.attachments.first().name}`)
+                                                        .catch((err) => {
+                                                          message.reply(err)
+                                                        })
+                                                  } else if(await check_random_repeat()) {
+                                                      setTimeout(() => {
+                                                        random_repeat(client, state, tmp)
+                                                      }, 500)
+                                                  } else {
+                                                    F.writeFile('tmp/np', `none`, (err) => {if(err !== null) {console.log(err)}})
+                                                    state.disconnect()
+                                                  }
                                                 })
                                             })
                                             .catch((err) => {
